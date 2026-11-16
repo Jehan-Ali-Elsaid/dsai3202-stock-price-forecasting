@@ -1,0 +1,36 @@
+{
+  "files": [
+    {
+      "bytes": 962269317,
+      "name": "all_stock_data.parquet",
+      "sha256": "476065dc13a413ee35dba5740dd795fc273d6bb1f9560f66ba11135055a4bf02",
+      "uncompressed_bytes": 1166056332
+    }
+  ],
+  "format": "parquet",
+  "input_version": "8de137ffdcab6ac2c3b4075c9c76ea3bb9612ec02f11ed9025f21a8cb1a0f069",
+  "received_utc": "2026-11-16T03:19:27.915759+00:00",
+  "source_url": "https://www.kaggle.com/datasets/jakewright/9000-tickers-of-stock-market-data-full-history",
+  "total_source_bytes": 962269317,
+  "total_uncompressed_bytes": 1166056332,
+  "uncompressed_size_method": "sum_of_parquet_row_group_total_byte_size",
+  "source_release": 2,
+  "publisher_release_date": "2024-11-13",
+  "download_url": "https://www.kaggle.com/api/v1/datasets/download/jakewright/9000-tickers-of-stock-market-data-full-history/all_stock_data.parquet",
+  "listed_csv_bytes": 3512208588,
+  "raw_parquet_rows": 34646258,
+  "row_groups": 34,
+  "first_date": "1962-01-02",
+  "last_date": "2024-11-04",
+  "schema": {
+    "Date": "date32[day]",
+    "Ticker": "string",
+    "Open": "double",
+    "High": "double",
+    "Low": "double",
+    "Close": "double",
+    "Volume": "double",
+    "Dividends": "double",
+    "Stock Splits": "double"
+  }
+}

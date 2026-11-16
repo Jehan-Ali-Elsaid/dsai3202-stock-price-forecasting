@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.sparkStaging/
+spark-warehouse/
+local-output/
+local-data/
+*.env
+.databrickscfg

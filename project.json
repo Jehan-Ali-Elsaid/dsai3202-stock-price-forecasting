@@ -1,0 +1,37 @@
+{
+  "dataset_id": "stock_daily",
+  "source_url": "https://www.kaggle.com/datasets/jakewright/9000-tickers-of-stock-market-data-full-history",
+  "format": "parquet",
+  "task": "regression",
+  "target": "close",
+  "keys": ["ticker", "date"],
+  "prediction_time": "On trading date t, after the opening price is available and before the market close for that ticker.",
+  "feature_version": "features_v1",
+  "stock_forecast": true,
+  "max_reject_fraction": 0.10,
+  "null_tokens": [],
+  "assumptions": [
+    "One record per publisher ticker and trading date. A ticker is an identifier and is not assumed to identify the same company across decades.",
+    "Prior sessions are earlier valid observations for the same ticker. Calendar gaps may reflect holidays, suspensions, missing data or quarantined records.",
+    "Price adjustment policy, currency and exchange coverage must be verified before interpreting historical errors across tickers or using features in point-in-time deployment."
+  ],
+  "columns": [
+    {"source": "Date", "name": "date", "type": "date", "definition": "Publisher's trading date."},
+    {"source": "Ticker", "name": "ticker", "type": "string", "definition": "Ticker symbol as provided by the source."},
+    {"source": "Open", "name": "open", "type": "double", "required": true, "definition": "Daily opening price as provided."},
+    {"source": "High", "name": "high", "type": "double", "required": true, "definition": "Daily high as provided."},
+    {"source": "Low", "name": "low", "type": "double", "required": true, "definition": "Daily low as provided."},
+    {"source": "Close", "name": "close", "type": "double", "definition": "Daily closing price as provided, used as the label."},
+    {"source": "Volume", "name": "volume", "type": "double", "min": 0, "definition": "Total daily trading volume as provided."},
+    {"source": "Dividends", "name": "dividends", "type": "double", "min": 0, "definition": "Publisher dividend amount on that date, retained for EDA."},
+    {"source": "Stock Splits", "name": "stock_splits", "type": "double", "min": 0, "definition": "Publisher stock split ratio. Zero indicates no split in the feed."}
+  ],
+  "profile_numeric": ["open", "high", "low", "close", "volume", "dividends", "stock_splits"],
+  "features": [
+    {"name": "open_price", "operation": "identity", "sources": ["open"], "definition": "Current trading date's opening price.", "available_at": "Once date t's opening price is known", "justification": "Measures the price level at prediction time and provides the baseline."},
+    {"name": "previous_close", "operation": "lag", "sources": ["close"], "definition": "Closing price from the previous accepted row for that ticker.", "available_at": "After the previous valid session closes", "justification": "Captures the recent price level using earlier labels only."},
+    {"name": "mean_close_previous_5", "operation": "trailing_mean", "sources": ["close"], "definition": "Mean of the five strictly earlier accepted closing prices, null without all five.", "available_at": "After the previous valid session closes", "justification": "Smooths recent price levels."},
+    {"name": "previous_range_fraction", "operation": "previous_range_fraction", "sources": ["high", "low", "close"], "definition": "Previous valid session's (High minus Low) divided by its Close.", "available_at": "After the previous valid session closes", "justification": "Approximates recent volatility relative to price level."},
+    {"name": "log_previous_volume", "operation": "log_lag", "sources": ["volume"], "definition": "Natural log of one plus previous valid session's volume.", "available_at": "After the previous valid session closes", "justification": "Compresses the scale of prior trading activity."}
+  ]
+}
