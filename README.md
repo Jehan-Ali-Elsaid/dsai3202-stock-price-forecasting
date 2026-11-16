@@ -31,10 +31,10 @@ ADF writes all nine bronze fields as strings. Databricks performs type conversio
 flowchart TD
     K["Kaggle release"] --> A["Lab VM with AzCopy"]
     A --> R["Project ADLS Gen2 raw CSV"]
-    R --> B["ADF CSV to Parquet"]
+    R --> B["Azure Data Factory converts CSV to Parquet"]
     B --> P["Project ADLS Gen2 bronze Parquet"]
     P --> H["SHA-256-verified copy to lab ADLS Gen2"]
-    H --> D["Databricks prepare"]
+    H --> D["Azure Databricks prepares clean data"]
     D --> V["Databricks validate"]
     V --> C["Databricks publish"]
     D --> S["Lab ADLS Gen2 silver Delta"]
@@ -55,7 +55,7 @@ The VM compares SHA-256 across the two Parquet files. The [handoff receipt](evid
 
 ## Run the pipeline
 
-Prerequisites are the course Ubuntu VM, Azure CLI with the Data Factory extension, AzCopy, Python 3, the two ADLS Gen2 accounts in the architecture table, and the course Databricks workspace and Lab 5 compute. The VM uses the course Microsoft Entra login. The ADF linked service uses the factory's managed identity. Databricks uses the existing Unity Catalog external locations for the lab lake.
+Prerequisites are the course Ubuntu VM, Azure CLI with the Data Factory extension, AzCopy, Python 3, the two ADLS Gen2 accounts in the architecture table, and the course Databricks workspace and Lab 5 compute. The VM uses the course Microsoft Entra login. The author running the VM needs blob data read and write access on the project and lab containers used for staging. Grant the ADF factory's managed identity access to read project `raw` and write project `processed`. The Databricks job's run-as identity needs `READ FILES` and `WRITE FILES` on the existing Unity Catalog external locations for the lab `processed` and `curated` containers.
 
 | Course lab | Procedure reused |
 | --- | --- |
@@ -126,7 +126,7 @@ diff -u evidence/azure/raw_before_rerun.json evidence/azure/raw_after_rerun.json
 
 ### 2. Convert CSV to Parquet in Azure Data Factory
 
-Open the project factory in ADF Studio. Use an ADLS Gen2 linked service named `ls_stock_lake` with its system-assigned managed identity, and test the connection to the **project** lake. The identity needs access to read raw and write processed. If the linked-service name differs, edit both dataset JSON files. Run these commands from the VM using the project's Azure names.
+Open the project factory in ADF Studio. Use an ADLS Gen2 linked service named `ls_stock_lake` with its system-assigned managed identity, and test the connection to the **project** lake. The identity needs access to read raw and write processed. If the linked-service name differs, edit both dataset JSON files. Use these commands for the first conversion of a release, when its bronze path is new. For the deployed release, the repository already includes the verified ADF evidence. Save any rerun separately.
 
 ```bash
 export RG="rg-dsai3202-jahan-60100358"
@@ -143,10 +143,24 @@ az datafactory pipeline create -g "$RG" --factory-name "$FACTORY" \
   --name pl_stock_phase1_csv_to_parquet --pipeline @azure/adf/pipeline.json
 
 az datafactory pipeline create-run -g "$RG" --factory-name "$FACTORY" \
-  --name pl_stock_phase1_csv_to_parquet --parameters "{\"release_sha256\":\"$STOCK_SHA\"}"
+  --name pl_stock_phase1_csv_to_parquet --parameters "{\"release_sha256\":\"$STOCK_SHA\"}" \
+  --query runId -o tsv > evidence/azure/adf_csv_to_parquet_run_id.txt
 ```
 
-In **ADF Studio → Monitor**, wait for `ConvertCsvToParquet` to succeed. Save its run ID and confirm **34,646,258 rows read and copied**, with equal read and copied counts. Repeating the same SHA should skip conversion when the output exists. If the initial copy fails and leaves an incomplete file, inspect its status and remove only that incomplete processed Parquet before retrying. Keep the raw CSV. Databricks checks the converted file's footer and row count before it can publish. [ADF consistency verification](https://learn.microsoft.com/en-us/azure/data-factory/copy-activity-data-consistency) · [ADF Parquet connector](https://learn.microsoft.com/en-us/azure/data-factory/format-parquet)
+In **ADF Studio → Monitor**, wait for `ConvertCsvToParquet` to succeed. Then save the activity result from the VM in the same shell. The Databricks handoff script reads both evidence files.
+
+```bash
+ADF_RUN_ID="$(cat evidence/azure/adf_csv_to_parquet_run_id.txt)"
+
+az datafactory activity-run query-by-pipeline-run \
+  -g "$RG" --factory-name "$FACTORY" --run-id "$ADF_RUN_ID" \
+  --last-updated-after "$(date -u -d '2 days ago' +%FT%TZ)" \
+  --last-updated-before "$(date -u +%FT%TZ)" \
+  --query "value[?activityName=='ConvertCsvToParquet'].{status:status,rowsRead:output.rowsRead,rowsCopied:output.rowsCopied,rowsSkipped:output.rowsSkipped,filesWritten:output.filesWritten,dataWritten:output.dataWritten}" \
+  -o json > evidence/azure/adf_csv_to_parquet_output.json
+```
+
+Check the activity reports **34,646,258 rows read and copied** and one file written. If the query returns an empty list, check the run status and widen the UTC date range to cover the completed run. For the safe-rerun check, start a second run with the same SHA, save its ID separately, and confirm `CheckBronze` reports that the existing Parquet file was found. Keep the full conversion's ID and activity output for the handoff. [ADF consistency verification](https://learn.microsoft.com/en-us/azure/data-factory/copy-activity-data-consistency) · [ADF Parquet connector](https://learn.microsoft.com/en-us/azure/data-factory/format-parquet)
 
 ### 3. Stage the ADF Parquet for the Lab 5 Databricks workspace
 
@@ -249,7 +263,7 @@ The [catalog entry](evidence/azure/job-867374748807312/catalog.json) records the
 
 ### EDA findings
 
-The Azure run profiled all **33,451,152 accepted rows** across **9,311 tickers** and **15,819 distinct dates**, from **1962-01-02** to **2024-11-04**. The most frequent rejection combined a nonpositive price with inconsistent OHLC values and accounted for **1,191,197** rejected rows.
+The quality report covers the full **34,646,258-row** input. The Azure EDA profiled all **33,451,152 accepted rows** across **9,311 tickers** and **15,819 distinct dates**, from **1962-01-02** to **2024-11-04**. The most frequent rejection combined a nonpositive price with inconsistent OHLC values and accounted for **1,191,197** rejected rows.
 
 - The median close was approximately **11.55**, with quartiles at **3.77** and **29.23**. The IQR rule flagged **4,055,707** closing prices. The maximum was approximately **1.51 × 10²⁸**, and the pooled Open–Close Pearson coefficient rounded to **1.0**. Inspect extremes by ticker and check the publisher's adjustment practices before interpreting pooled correlations or MAE.
 - **4,537,809** accepted rows had zero volume. Compare model performance for zero-volume and active observations, since their forecasts may have different interpretations.
