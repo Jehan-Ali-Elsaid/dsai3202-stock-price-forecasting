@@ -1,0 +1,54 @@
+resources:
+  jobs:
+    DSAI3202_Stock_Close_Forecast_Phase_1:
+      name: DSAI3202 Stock Close Forecast Phase 1
+      tasks:
+        - task_key: prepare
+          notebook_task:
+            notebook_path: /Workspace/Users/60100358@udst.edu.qa/DSAI3202_Phase1/phase1_pipeline_2091a32
+            base_parameters:
+              stage: prepare
+              run_id: job-{{job.run_id}}
+            source: WORKSPACE
+          existing_cluster_id: 1021-164544-loanly4g
+        - task_key: validate
+          depends_on:
+            - task_key: prepare
+          notebook_task:
+            notebook_path: /Workspace/Users/60100358@udst.edu.qa/DSAI3202_Phase1/phase1_pipeline_2091a32
+            base_parameters:
+              stage: validate
+              run_id: job-{{job.run_id}}
+            source: WORKSPACE
+          existing_cluster_id: 1021-164544-loanly4g
+        - task_key: publish
+          depends_on:
+            - task_key: validate
+          notebook_task:
+            notebook_path: /Workspace/Users/60100358@udst.edu.qa/DSAI3202_Phase1/phase1_pipeline_2091a32
+            base_parameters:
+              stage: publish
+              run_id: job-{{job.run_id}}
+            source: WORKSPACE
+          existing_cluster_id: 1021-164544-loanly4g
+      queue:
+        enabled: true
+      parameters:
+        - name: adf_run_id
+          default: 2f2598ba-e1ba-11f1-9bcb-70a8a53d4b1a
+        - name: clean_format
+          default: delta
+        - name: code_version
+          default: 33458028d49b505c4108a4a4ced12790ca884695
+        - name: config_path
+          default: abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/handoff/f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98/project-4adabaadf90edbb7f4b3b8802ef4853de42bfebe711a07fe6dc0810a839a2575.json
+        - name: handoff_path
+          default: abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/handoff/f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98/handoff-0e8579fd1897f64192c5e0d685ea4c0642afce4b5479ab67d3db3a1d5fbd60b0.json
+        - name: landing_path
+          default: abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/bronze_csv/f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98/all_stock_data.parquet
+        - name: processed_root
+          default: abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/silver
+        - name: root_path
+          default: abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data
+        - name: scenario
+          default: full

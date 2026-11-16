@@ -1,0 +1,57 @@
+{
+  "column_missing_and_invalid": {
+    "_invalid_close": 0,
+    "_invalid_date": 0,
+    "_invalid_dividends": 0,
+    "_invalid_high": 0,
+    "_invalid_low": 0,
+    "_invalid_open": 0,
+    "_invalid_stock_splits": 3,
+    "_invalid_ticker": 0,
+    "_invalid_volume": 0,
+    "_missing_close": 106,
+    "_missing_date": 0,
+    "_missing_dividends": 0,
+    "_missing_high": 109,
+    "_missing_low": 109,
+    "_missing_open": 109,
+    "_missing_stock_splits": 0,
+    "_missing_ticker": 0,
+    "_missing_volume": 0
+  },
+  "expected_source_rows": 34646258,
+  "failures": [],
+  "max_reject_fraction": 0.1,
+  "reject_fraction": 0.034494518859727936,
+  "reject_reason_counts": [
+    {
+      "_reason": "nonpositive_price",
+      "count": 949
+    },
+    {
+      "_reason": "nonpositive_price|inconsistent_ohlc",
+      "count": 1191197
+    },
+    {
+      "_reason": "inconsistent_ohlc",
+      "count": 2848
+    },
+    {
+      "_reason": "missing_open|missing_high|missing_low|missing_close",
+      "count": 106
+    },
+    {
+      "_reason": "missing_open|missing_high|missing_low|nonpositive_price",
+      "count": 3
+    },
+    {
+      "_reason": "invalid_stock_splits",
+      "count": 3
+    }
+  ],
+  "row_counts": {
+    "accepted": 33451152,
+    "input": 34646258,
+    "rejected": 1195106
+  }
+}

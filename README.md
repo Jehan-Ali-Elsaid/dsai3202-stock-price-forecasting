@@ -1,6 +1,6 @@
 # DSAI3202 Phase 1 Stock Close Forecast
 
-The pipeline takes the Kaggle stock history through versioned ingestion, quality checks, full-population profiling and initial forecasting features. The files to run in Azure are `phase1_pipeline.py`, `project.json` and `fixtures/quality_test.parquet`. Use the Azure steps below to capture the assessed evidence.
+The pipeline takes the Kaggle stock history through versioned ingestion, quality checks, full-population profiling and initial forecasting features. The files to run in Azure are `phase1_pipeline.py`, `project.json` and `fixtures/quality_test.parquet`. The run reports and exported configurations record the deployed Azure pipeline.
 
 ## Project and hypothesis
 
@@ -8,17 +8,16 @@ The pipeline takes the Kaggle stock history through versioned ingestion, quality
 
 **Proposed Phase 1 refinement:** For ticker and trading date *t*, make a prediction once that date’s opening price is available. A regression model that uses the opening price and strictly earlier observations should achieve lower mean absolute error (MAE) for the same date’s `Close` than the baseline **predicted close = opening price** on a held-out chronological test period. Endpoint use would be a pre-close estimate for a user reviewing daily price movements.
 
-The timing makes the experiment testable and avoids using the completed day’s high, low or total volume. The target and source are carried over from Phase 0. Record the refinement and confirmation status in the submission. Compare both methods on identical test rows and split by dates across all tickers. Use earlier dates for training, the next block for validation and the latest block for testing. Fit preprocessing using training data only. Report MAE as forecasting evidence. A claim about trading gains would need a separate evaluation of trades and costs.
+The timing makes the experiment testable and avoids using the completed day’s high, low or total volume. The target and source are carried over from Phase 0. Compare both methods on identical test rows and split by dates across all tickers. Use earlier dates for training, the next block for validation and the latest block for testing. Fit preprocessing using training data only. Report MAE as forecasting evidence. A claim about trading gains would need a separate evaluation of trades and costs.
 
 ## Dataset and architecture
 
-**Source:** Jake Wright, *9000+ Tickers of Stock Market Data (Full History)*, Kaggle release 2, dated 13 November 2024. The Phase 0 data source, release and regression target are retained. Phase 1 uses the publisher's full **`all_stock_data.csv`** file and converts it to bronze Parquet in ADF. Record the format refinement and its confirmation status in the submission.
+**Source:** Jake Wright, *9000+ Tickers of Stock Market Data (Full History)*, Kaggle release 2, dated 13 November 2024. The Phase 0 data source, release and regression target are retained. Phase 1 uses the publisher's full **`all_stock_data.csv`** file and converts it to bronze Parquet in ADF.
 
 - [Kaggle dataset page](https://www.kaggle.com/datasets/jakewright/9000-tickers-of-stock-market-data-full-history?select=all_stock_data.csv)
-- [Direct CSV download](https://www.kaggle.com/api/v1/datasets/download/jakewright/9000-tickers-of-stock-market-data-full-history/all_stock_data.csv)
 - [Kaggle file listing API](https://www.kaggle.com/api/v1/datasets/list/jakewright/9000-tickers-of-stock-market-data-full-history)
 
-The original CSV has **3,512,208,588 bytes** (3.512 GB uncompressed) and **34,646,258 data records**. The [verified source manifest](evidence/local_source_manifest.json) records the exact byte count, headers and SHA-256. Kaggle lists Yahoo as the data source and “Other (specified in description)” as the license in its [metadata](https://www.kaggle.com/api/v1/datasets/metadata/jakewright/9000-tickers-of-stock-market-data-full-history). Keep the original file in Azure and link the publisher from Git.
+The original CSV has **3,512,208,588 bytes** (3.512 GB uncompressed) and **34,646,258 data records**. The [verified raw handoff receipt](evidence/azure/databricks_lab_handoff.json) records the original CSV path, byte count and SHA-256. Kaggle lists Yahoo as the data source and “Other (specified in description)” as the license in its [metadata](https://www.kaggle.com/api/v1/datasets/metadata/jakewright/9000-tickers-of-stock-market-data-full-history). Keep the original file in Azure and link the publisher from Git.
 
 | CSV columns | Bronze Parquet columns | Clean types |
 | --- | --- | --- |
@@ -31,21 +30,32 @@ ADF writes all nine bronze fields as strings. Databricks performs type conversio
 ```mermaid
 flowchart TD
     K["Kaggle release"] --> A["Lab VM with AzCopy"]
-    A --> R["ADLS Gen2 raw CSV"]
+    A --> R["Project ADLS Gen2 raw CSV"]
     R --> B["ADF CSV to Parquet"]
-    B --> P["ADLS Gen2 bronze Parquet"]
-    P --> H["Verified copy to Lab 3 processed"]
+    B --> P["Project ADLS Gen2 bronze Parquet"]
+    P --> H["SHA-256-verified copy to lab ADLS Gen2"]
     H --> D["Databricks prepare"]
     D --> V["Databricks validate"]
     V --> C["Databricks publish"]
-    C --> U["Lab 3 curated"]
+    D --> S["Lab ADLS Gen2 silver Delta"]
+    C --> U["Lab ADLS Gen2 curated features and reports"]
 ```
 
-The refresh is a manual batch for each selected Kaggle release. ADLS retains the original CSV under `raw/stock_phase1/releases/<CSV_SHA>/all_stock_data.csv`. ADF writes the derived bronze file to `processed/stock_phase1/bronze_csv/<CSV_SHA>/all_stock_data.parquet`. The VM verifies the raw receipt and copies the Parquet into the existing Lab 3 lake. It verifies both Parquet copies with SHA-256 and saves the handoff receipt. Databricks verifies the staged file, checks its schema and full row count, and saves outputs under the project prefix on the lab lake. The published catalog entry links the ingestion and ADF evidence, the clean Delta, and the features.
+Refresh is a manual batch for each selected Kaggle release. The source and ADF conversion run in resource group `rg-dsai3202-jahan-60100358`. The Databricks job runs in workspace `dsai3202-databricks` on the existing Lab 5 compute.
+
+| Azure storage account | Container and location | Contents |
+| --- | --- | --- |
+| `stockforcasting60100358` | `raw/stock_phase1/releases/<CSV_SHA>/` | Original versioned Kaggle CSV |
+| `stockforcasting60100358` | `processed/stock_phase1/bronze_csv/<CSV_SHA>/` | Original ADF bronze Parquet |
+| `amazonlake60100358` | `processed/stock_phase1/bronze_csv/<CSV_SHA>/` and `processed/stock_phase1/handoff/<CSV_SHA>/` | Verified Parquet copy, configuration, handoff receipt and quality fixture |
+| `amazonlake60100358` | `processed/stock_phase1/silver/` | Clean Delta |
+| `amazonlake60100358` | `curated/stock_phase1/project_data/` | Rejected rows, quality reports, EDA, catalog and versioned features |
+
+The VM compares SHA-256 across the two Parquet files. The [handoff receipt](evidence/azure/databricks_lab_handoff.json) connects the original CSV, ADF conversion, and staged Parquet. The [published catalog entry](evidence/azure/job-867374748807312/catalog.json) records schema, key `(ticker, date)`, assumptions, lineage and output paths.
 
 ## Run the pipeline
 
-Use the Phase 1 brief and your instructor's directions to select the project resource group and services. The labs supply the procedures for Azure CLI, AzCopy, Data Factory and Databricks. Allow about **4–6 hours of hands-on work**, with extra elapsed time for a 3.512 GB CSV transfer and its Azure conversion.
+Prerequisites are the course Ubuntu VM, Azure CLI with the Data Factory extension, AzCopy, Python 3, the two ADLS Gen2 accounts in the architecture table, and the course Databricks workspace and Lab 5 compute. The VM uses the course Microsoft Entra login. The ADF linked service uses the factory's managed identity. Databricks uses the existing Unity Catalog external locations for the lab lake.
 
 | Course lab | Procedure reused |
 | --- | --- |
@@ -56,24 +66,40 @@ Use the Phase 1 brief and your instructor's directions to select the project res
 
 ### 1. Download and ingest the original CSV
 
-Use the Ubuntu VM from the course as your terminal. Run from the project folder. The destination is the storage account designated for this project. Make sure the account uses ADLS Gen2 and has `raw`, `processed` and `curated` containers. Allow space for the 3.512 GB download and one temporary verification copy.
+Download `all_stock_data.csv` from the Kaggle dataset page to Windows. In the Ubuntu VM, create the destination folders:
 
 ```bash
-mkdir -p local-data evidence/azure
+mkdir -p ~/DSAI3202_Stock_Phase1/local-data ~/DSAI3202_Stock_Phase1/evidence/azure
+```
 
-curl --fail --location --retry 3 --continue-at - \
-  "https://www.kaggle.com/api/v1/datasets/download/jakewright/9000-tickers-of-stock-market-data-full-history/all_stock_data.csv" \
-  -o local-data/all_stock_data.csv.part \
-  && mv local-data/all_stock_data.csv.part local-data/all_stock_data.csv
+From Windows PowerShell, connect with the Lab 3 SSH identity. Substitute your key path, VM user and public IP.
 
-printf '%s  %s\n'   'f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98'   'local-data/all_stock_data.csv' | sha256sum -c -
+```powershell
+sftp -i "YOUR_WINDOWS_SSH_KEY_PATH" YOUR_VM_USER@YOUR_VM_PUBLIC_IP
+```
+
+At the `sftp>` prompt, run:
+
+```text
+lcd C:/Users/YOUR_WINDOWS_USER/Downloads
+cd DSAI3202_Stock_Phase1/local-data
+put all_stock_data.csv
+```
+
+If the upload is interrupted after the remote file is created, reconnect, open the same folders and run `reput all_stock_data.csv`. Then verify the complete file in Ubuntu:
+
+```bash
+cd ~/DSAI3202_Stock_Phase1
+printf '%s  %s\n' \
+  'f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98' \
+  'local-data/all_stock_data.csv' | sha256sum -c -
 ```
 
 Wait for `OK`. Sign in to your course account, set the designated destination and run the upload.
 
 ```bash
 az login --use-device-code
-export SA="YOUR_PROJECT_STORAGE_ACCOUNT"
+export SA="stockforcasting60100358"
 export STOCK_SHA="$(sha256sum local-data/all_stock_data.csv | cut -d ' ' -f 1)"
 set -o pipefail
 
@@ -103,8 +129,8 @@ diff -u evidence/azure/raw_before_rerun.json evidence/azure/raw_after_rerun.json
 Open the project factory in ADF Studio. Use an ADLS Gen2 linked service named `ls_stock_lake` with its system-assigned managed identity, and test the connection to the **project** lake. The identity needs access to read raw and write processed. If the linked-service name differs, edit both dataset JSON files. Run these commands from the VM using the project's Azure names.
 
 ```bash
-export RG="YOUR_PROJECT_RESOURCE_GROUP"
-export FACTORY="YOUR_PROJECT_DATA_FACTORY"
+export RG="rg-dsai3202-jahan-60100358"
+export FACTORY="adf-dsai3202-60100358"
 az extension add --name datafactory
 
 az datafactory dataset create -g "$RG" --factory-name "$FACTORY" \
@@ -120,7 +146,7 @@ az datafactory pipeline create-run -g "$RG" --factory-name "$FACTORY" \
   --name pl_stock_phase1_csv_to_parquet --parameters "{\"release_sha256\":\"$STOCK_SHA\"}"
 ```
 
-In **ADF Studio → Monitor**, wait for `ConvertCsvToParquet` to succeed. Save its run ID and confirm **34,646,258 rows read and copied**, with no skipped rows. Repeating the same SHA should skip conversion when the output exists. If the initial copy fails and leaves an incomplete file, inspect its status and remove only that incomplete processed Parquet before retrying. Keep the raw CSV. Databricks checks the converted file's footer and row count before it can publish. [ADF consistency verification](https://learn.microsoft.com/en-us/azure/data-factory/copy-activity-data-consistency) · [ADF Parquet connector](https://learn.microsoft.com/en-us/azure/data-factory/format-parquet)
+In **ADF Studio → Monitor**, wait for `ConvertCsvToParquet` to succeed. Save its run ID and confirm **34,646,258 rows read and copied**, with equal read and copied counts. Repeating the same SHA should skip conversion when the output exists. If the initial copy fails and leaves an incomplete file, inspect its status and remove only that incomplete processed Parquet before retrying. Keep the raw CSV. Databricks checks the converted file's footer and row count before it can publish. [ADF consistency verification](https://learn.microsoft.com/en-us/azure/data-factory/copy-activity-data-consistency) · [ADF Parquet connector](https://learn.microsoft.com/en-us/azure/data-factory/format-parquet)
 
 ### 3. Stage the ADF Parquet for the Lab 5 Databricks workspace
 
@@ -147,7 +173,7 @@ In **Compute**, start your existing `dsai3202-lab5-60100358` compute and keep th
 | validate | `validate` | prepare succeeded |
 | publish | `publish` | validate succeeded |
 
-For each task, set `run_id` to `job-{{job.run_id}}`. Add the job parameters from `evidence/azure/databricks_lab_parameters.json` under `job_parameters`. Commit the exact notebook and config your job will use and replace the code version placeholder with the value from `git rev-parse HEAD`. [The job JSON](job.example.json) provides the matching task structure.
+For each task, set `run_id` to `job-{{job.run_id}}`. Add the job parameters from `evidence/azure/databricks_lab_parameters.json` under `job_parameters`. Set `code_version` to the commit of the deployed notebook. The verified runs used `33458028d49b505c4108a4a4ced12790ca884695`. Use the [exported Databricks job](evidence/azure/databricks-job.yaml) for the actual workspace notebook path, compute and task settings, and [job.example.json](job.example.json) as the setup template.
 
 | Job parameter | Source or value |
 | --- | --- |
@@ -167,7 +193,7 @@ For each task, set `run_id` to `job-{{job.run_id}}`. Add the job parameters from
 
 **Controlled failure.** Choose **Run now with different parameters**. Set `scenario=quality_test`, change `landing_path` to `quality_test_landing_path` from the handoff output, and clear `adf_run_id` for that run. Keep `handoff_path` so the notebook can verify the fixture. Prepare should succeed with the quarantine report, validate should reject all four fixture records, and publish should be skipped. [Databricks run overrides](https://learn.microsoft.com/en-us/azure/databricks/jobs/run-now)
 
-Export the deployed ADF and Databricks definitions as small, reviewed evidence files. Save the Databricks job JSON from **View as code** in the job UI. The ADF Copy pipeline can be exported from the VM with:
+The [deployed Databricks job YAML](evidence/azure/databricks-job.yaml) records the task graph and configured parameters. The [deployed ADF pipeline JSON](evidence/azure/adf.pipeline.export.json) records the conversion steps. Export ADF again from the VM with:
 
 ```bash
 az datafactory pipeline show -g rg-dsai3202-jahan-60100358 \
@@ -200,23 +226,36 @@ PYSPARK_SUBMIT_ARGS='--driver-memory 4400m pyspark-shell' python phase1_pipeline
 
 The pipeline validates keys, labels and required prices. It quarantines nonpositive prices, inconsistent OHLC ranges beyond a small rounding tolerance, negative optional numeric fields, and invalid values. Exact normalized duplicates retain one row. Valid rows that disagree for the same ticker and date are quarantined together. The provisional quality gate fails on zero accepted rows or a reject fraction above **10%**. Review overall and yearly losses when judging fitness for the experiment. Preserve the full input first so early coverage or anomaly investigations remain possible.
 
-EDA uses every accepted row. The full local run processed **34,646,258** source rows, retained **33,451,152** across **9,311** tickers, and quarantined **1,195,106** (3.45%). The most common reject combination (1,191,197 rows) was a nonpositive price and an inconsistent price range. The raw snapshot retains those rows for review.
+### Azure run evidence
 
-- The median reported `Close` is about 11.55, with an approximate interquartile range of 3.77–29.20. The maximum is approximately 1.51 × 10²⁸. The observed Open–Close Pearson coefficient rounds to 1.0. Investigate the extreme values and price adjustment policy before relying on pooled correlations or a pooled price MAE.
-- There are 4,537,809 accepted zero-volume rows. Price forecasts on these rows may have a different interpretation from forecasts on actively traded observations. Report the volume mix and compare periods when evaluating the model.
-- The five-observation trailing mean is missing in 46,515 rows while it accumulates enough history. Track this when comparing model and baseline so both are evaluated on the same rows.
+| Check | Run and evidence | Result |
+| --- | --- | --- |
+| Raw ingestion rerun | [Before](evidence/azure/raw_before_rerun.json), [after](evidence/azure/raw_after_rerun.json), [verification log](evidence/azure/raw_upload_rerun.log) | Same versioned CSV path, ETag, last-modified time and byte count. The copy SHA-256 matched. |
+| ADF full conversion | `2f2598ba-e1ba-11f1-9bcb-70a8a53d4b1a`, [activity output](evidence/azure/adf_csv_to_parquet_output.json) | 34,646,258 rows read and copied to one bronze Parquet file. |
+| ADF safe rerun | `ec38cf96-e1bd-11f1-9bcb-70a8a53d4b1a`, [activity output](evidence/azure/adf_csv_to_parquet_rerun_output.json) | The bronze file already existed, so the conversion was skipped. |
+| Databricks full | [`867374748807312`](evidence/azure/job-867374748807312/run.json), [quality](evidence/azure/job-867374748807312/quality.json), [gate](evidence/azure/job-867374748807312/gate.json), [EDA](evidence/azure/job-867374748807312/eda.json) | Published. **34,646,258 input = 33,451,152 accepted + 1,195,106 rejected**. Rejected fraction 3.45%. |
+| Databricks safe rerun | [`2326475523307`](evidence/azure/job-2326475523307/run.json) | Reused the original run and output version with the same row counts. |
+| Controlled failure | [`849984634809090`](evidence/azure/job-849984634809090/run.json), [quality](evidence/azure/job-849984634809090/quality.json), [gate](evidence/azure/job-849984634809090/gate.json) | 4 input, 0 accepted, 4 rejected. Validation failed on zero accepted records and 100% rejection. Publish was skipped. |
 
-See [local quality](evidence/local_quality.json), [local EDA](evidence/local_eda.json) and [local run comparison](evidence/local_run_comparison.json). Add actual Azure evidence below.
+The full run used input version `557cee81744d3f3e75987d974d703488af0fe3c4cb1ee89bb97789404314f5c4`, code version `33458028d49b505c4108a4a4ced12790ca884695`, and output version `e35752aaf4631de76015ac358c1f8c3d96d3ac2314c23c7e2935a3ce7d7137fa`. The fixture has its own input version recorded in the controlled-failure report.
 
-| Azure run | IDs and links | Input and output version | Input / accepted / rejected |
-| --- | --- | --- | --- |
-| ADF full conversion | `2f2598ba-e1ba-11f1-9bcb-70a8a53d4b1a` | CSV SHA-256 → bronze Parquet | 34,646,258 read and copied |
-| ADF rerun | `ec38cf96-e1bd-11f1-9bcb-70a8a53d4b1a` | Same CSV and bronze file | Existing Parquet reused |
-| Databricks full | [Databricks] | [versions] | [counts] |
-| Databricks rerun | [Databricks] | [same versions] | [counts] |
-| Controlled failure | [Databricks] | [fixture version and no published output] | [counts] |
+The [catalog entry](evidence/azure/job-867374748807312/catalog.json) records the exact Azure URIs. The paths below are relative to the named containers in `amazonlake60100358`.
 
-| Model input | Type | Definition | Availability |
+| Output | Container and path |
+| --- | --- |
+| Clean Delta | `processed/stock_phase1/silver/stock_daily/full/job-867374748807312/clean` |
+| Versioned feature Parquet | `curated/stock_phase1/project_data/stock_daily/full/runs/job-867374748807312/features_v1` |
+| Quarantined rows | `curated/stock_phase1/project_data/stock_daily/full/runs/job-867374748807312/rejected` |
+
+### EDA findings
+
+The Azure run profiled all **33,451,152 accepted rows** across **9,311 tickers** and **15,819 distinct dates**, from **1962-01-02** to **2024-11-04**. The most frequent rejection combined a nonpositive price with inconsistent OHLC values and accounted for **1,191,197** rejected rows.
+
+- The median close was approximately **11.55**, with quartiles at **3.77** and **29.23**. The IQR rule flagged **4,055,707** closing prices. The maximum was approximately **1.51 × 10²⁸**, and the pooled Open–Close Pearson coefficient rounded to **1.0**. Inspect extremes by ticker and check the publisher's adjustment practices before interpreting pooled correlations or MAE.
+- **4,537,809** accepted rows had zero volume. Compare model performance for zero-volume and active observations, since their forecasts may have different interpretations.
+- `previous_close`, `previous_range_fraction`, and `log_previous_volume` each had **9,311** missing values. The five-observation mean had **46,515** missing values. Compare the model and baseline on identical held-out rows and account for initial missing history.
+
+| Model input | Type | Source and definition | Availability |
 | --- | --- | --- | --- |
 | `open_price` | Double | Same date's opening price | At prediction time |
 | `previous_close` | Double | Latest strictly earlier accepted close for the ticker | After the earlier session closes |
@@ -228,25 +267,17 @@ Keep `ticker` and `date` for identification and chronological splitting. The sam
 
 ## Resource use and contributions
 
-The Azure Data Factory run reported **2,182,524,492 bytes** written to Parquet, about **37.9% less** than the original 3,512,208,588-byte CSV. The Databricks handoff adds one verified Parquet copy to the Lab 3 lake so the job can use the course's existing storage access. Databricks reuses its clean and feature output on a safe rerun. Terminate your course Databricks compute and deallocate the VM after the checks. Keep ADF triggers and Data Flow debug off for this manual workflow. Retain the project data and evidence needed by the instructor.
+ADF wrote **2,182,524,492 bytes** of Parquet, **37.9% smaller** than the 3,512,208,588-byte CSV. The handoff stores one extra verified Parquet copy to use the course workspace's existing storage access. Reusing published results reduced measured notebook-stage time from **185.256 seconds** on the [full run](evidence/azure/job-867374748807312/run.json) to **4.074 seconds** on the [rerun](evidence/azure/job-2326475523307/run.json). These timings measure the three pipeline stages and exclude cluster startup and task scheduling.
 
-Record the work each team member actually performed, including dataset verification, cloud configuration, code changes and review of run results. The notebook builds on the previously generated Phase 1 starter and uses the workflow concepts from Labs 3–7. Document any course lab code copied during your own changes.
+After the checks, terminate the Lab 5 compute and deallocate the VM from the Azure portal. Keep ADF triggers and Data Flow debug off for this manual workflow. Retain the versioned source, outputs and run evidence for instructor access.
 
-Submit the GitHub or course Azure Repos link in D2L. Grant the instructor access to the repository and relevant Azure files, record the submitted commit, and check the D2L deadline. Keep the public download link, manifest, source, configuration, run instructions and small evidence files in Git. Leave large source and generated tables in Azure.
+Jehan Ali Elsaid verified the source hash, configured Azure storage and ADF, staged the Parquet, set up the three Databricks tasks, and ran and verified the full pipeline, safe rerun and controlled failure. The project follows Lab 3 for versioned ADLS ingestion, Lab 4 for ADF conversion, Lab 5 for Spark cleaning and Delta, Lab 6 for the three-task quality gate and isolated failure test, and Lab 7 for versioned features. The stock-specific schema, reject rules and lagged features adapt those workflows to daily close forecasting.
 
-For a new repository, create an empty remote first, then run these commands from the project folder. The first commit is the one to use as `code_version` for the Azure job. Commit your Azure evidence and final README afterwards.
-
-```powershell
-git init -b main
-git add .
-git commit -m "Build stock forecasting Phase 1 data pipeline"
-git rev-parse HEAD
-git remote add origin "YOUR_REPOSITORY_URL"
-git push -u origin main
-```
+Submit the repository link and final documentation commit in D2L. Grant the instructor repository access and access to the relevant Azure paths as required by the course. Keep the large source and generated tables in Azure.
 
 ## AI use
 
 | Tool | Request | Response | My changes and verification |
 | --- | --- | --- | --- |
-| ChatGPT | Turn my Phase 0 stock project into Phase 1 code and run instructions. | Adapted the pipeline, verified the selected CSV and added the ADF conversion, formulated a testable hypothesis and baseline, added stock-specific quality rules and trailing features, added AzCopy and ADF deployment definitions, split the Databricks job into three tasks, adapted it to the Lab 5 and 6 paths, and tested the code locally. | [Add the changes you made, the runs you performed in Azure and how you verified them.] |
+| ChatGPT | Adapt the Phase 0 stock project into a Phase 1 pipeline and help document the Azure runs. | Drafted the ingestion and ADF setup, Databricks pipeline and features, test fixture, run commands and README. | I configured and ran the Azure resources, checked the raw and Parquet hashes, verified row accounting and the reused output version, and saved the controlled-failure evidence. |
+| Databricks Genie Code | Diagnose the Spark Connect write failure. | Identified the unsupported `errorifexists` write-mode spelling on the course compute and updated the three writes to use `error`. | I reviewed the three changes, committed the matching code to Git, and verified the full run, safe rerun and controlled failure using that commit. |

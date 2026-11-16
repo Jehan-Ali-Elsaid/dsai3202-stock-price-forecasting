@@ -1,0 +1,28 @@
+{
+  "adf_run_id": "2f2598ba-e1ba-11f1-9bcb-70a8a53d4b1a",
+  "candidate_output_version": "e35752aaf4631de76015ac358c1f8c3d96d3ac2314c23c7e2935a3ce7d7137fa",
+  "catalog": "abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data/stock_daily/full/catalog/e35752aaf4631de76015ac358c1f8c3d96d3ac2314c23c7e2935a3ce7d7137fa.json",
+  "clean_format": "delta",
+  "code_version": "33458028d49b505c4108a4a4ced12790ca884695",
+  "config_sha256": "1dcef3946169c5af791a424a44b49a461e79f64c98a8e4b979579e5043f88dea",
+  "elapsed_seconds": 4.074,
+  "ingestion": "reused",
+  "input_version": "557cee81744d3f3e75987d974d703488af0fe3c4cb1ee89bb97789404314f5c4",
+  "manifest": "abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data/stock_daily/full/raw/557cee81744d3f3e75987d974d703488af0fe3c4cb1ee89bb97789404314f5c4/manifest.json",
+  "original_run_id": "job-867374748807312",
+  "output_version": "e35752aaf4631de76015ac358c1f8c3d96d3ac2314c23c7e2935a3ce7d7137fa",
+  "row_counts": {
+    "accepted": 33451152,
+    "input": 34646258,
+    "rejected": 1195106
+  },
+  "run_id": "job-2326475523307",
+  "scenario": "full",
+  "stage_seconds": {
+    "prepare": 2.912,
+    "publish": 0.581,
+    "validate": 0.581
+  },
+  "started_utc": "2026-11-16T19:16:07.565320+00:00",
+  "status": "reused"
+}

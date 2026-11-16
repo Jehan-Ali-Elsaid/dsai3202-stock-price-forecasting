@@ -1,0 +1,268 @@
+{
+  "adf_run_id": "2f2598ba-e1ba-11f1-9bcb-70a8a53d4b1a",
+  "assumptions": [
+    "One record per publisher ticker and trading date. A ticker is an identifier and is not assumed to identify the same company across decades.",
+    "Prior sessions are earlier valid observations for the same ticker. Calendar gaps may reflect holidays, suspensions, missing data or quarantined records.",
+    "Price adjustment policy, currency and exchange coverage must be verified before interpreting historical errors across tickers or using features in point-in-time deployment."
+  ],
+  "clean_format": "delta",
+  "clean_schema": {
+    "fields": [
+      {
+        "metadata": {},
+        "name": "date",
+        "nullable": true,
+        "type": "date"
+      },
+      {
+        "metadata": {},
+        "name": "ticker",
+        "nullable": true,
+        "type": "string"
+      },
+      {
+        "metadata": {},
+        "name": "open",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "high",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "low",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "close",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "volume",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "dividends",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "stock_splits",
+        "nullable": true,
+        "type": "double"
+      }
+    ],
+    "type": "struct"
+  },
+  "code_version": "33458028d49b505c4108a4a4ced12790ca884695",
+  "columns": [
+    {
+      "definition": "Publisher's trading date.",
+      "name": "date",
+      "source": "Date",
+      "type": "date"
+    },
+    {
+      "definition": "Ticker symbol as provided by the source.",
+      "name": "ticker",
+      "source": "Ticker",
+      "type": "string"
+    },
+    {
+      "definition": "Daily opening price as provided.",
+      "name": "open",
+      "required": true,
+      "source": "Open",
+      "type": "double"
+    },
+    {
+      "definition": "Daily high as provided.",
+      "name": "high",
+      "required": true,
+      "source": "High",
+      "type": "double"
+    },
+    {
+      "definition": "Daily low as provided.",
+      "name": "low",
+      "required": true,
+      "source": "Low",
+      "type": "double"
+    },
+    {
+      "definition": "Daily closing price as provided, used as the label.",
+      "name": "close",
+      "source": "Close",
+      "type": "double"
+    },
+    {
+      "definition": "Total daily trading volume as provided.",
+      "min": 0,
+      "name": "volume",
+      "source": "Volume",
+      "type": "double"
+    },
+    {
+      "definition": "Publisher dividend amount on that date, retained for EDA.",
+      "min": 0,
+      "name": "dividends",
+      "source": "Dividends",
+      "type": "double"
+    },
+    {
+      "definition": "Publisher stock split ratio. Zero indicates no split in the feed.",
+      "min": 0,
+      "name": "stock_splits",
+      "raw_source": "Stock Splits",
+      "source": "Stock_Splits",
+      "type": "double"
+    }
+  ],
+  "config_sha256": "1dcef3946169c5af791a424a44b49a461e79f64c98a8e4b979579e5043f88dea",
+  "dataset_id": "stock_daily",
+  "eda": "abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data/stock_daily/full/runs/job-867374748807312/eda.json",
+  "feature_schema": {
+    "fields": [
+      {
+        "metadata": {},
+        "name": "ticker",
+        "nullable": true,
+        "type": "string"
+      },
+      {
+        "metadata": {},
+        "name": "date",
+        "nullable": true,
+        "type": "date"
+      },
+      {
+        "metadata": {},
+        "name": "open_price",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "previous_close",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "mean_close_previous_5",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "previous_range_fraction",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "log_previous_volume",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "label",
+        "nullable": true,
+        "type": "double"
+      }
+    ],
+    "type": "struct"
+  },
+  "feature_version": "features_v1",
+  "features": [
+    {
+      "available_at": "Once date t's opening price is known",
+      "definition": "Current trading date's opening price.",
+      "justification": "Measures the price level at prediction time and provides the baseline.",
+      "name": "open_price",
+      "operation": "identity",
+      "sources": [
+        "open"
+      ]
+    },
+    {
+      "available_at": "After the previous valid session closes",
+      "definition": "Closing price from the previous accepted row for that ticker.",
+      "justification": "Captures the recent price level using earlier labels only.",
+      "name": "previous_close",
+      "operation": "lag",
+      "sources": [
+        "close"
+      ]
+    },
+    {
+      "available_at": "After the previous valid session closes",
+      "definition": "Mean of the five strictly earlier accepted closing prices, null without all five.",
+      "justification": "Smooths recent price levels.",
+      "name": "mean_close_previous_5",
+      "operation": "trailing_mean",
+      "sources": [
+        "close"
+      ]
+    },
+    {
+      "available_at": "After the previous valid session closes",
+      "definition": "Previous valid session's (High minus Low) divided by its Close.",
+      "justification": "Approximates recent volatility relative to price level.",
+      "name": "previous_range_fraction",
+      "operation": "previous_range_fraction",
+      "sources": [
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    {
+      "available_at": "After the previous valid session closes",
+      "definition": "Natural log of one plus previous valid session's volume.",
+      "justification": "Compresses the scale of prior trading activity.",
+      "name": "log_previous_volume",
+      "operation": "log_lag",
+      "sources": [
+        "volume"
+      ]
+    }
+  ],
+  "input_version": "557cee81744d3f3e75987d974d703488af0fe3c4cb1ee89bb97789404314f5c4",
+  "keys": [
+    "ticker",
+    "date"
+  ],
+  "manifest": "abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data/stock_daily/full/raw/557cee81744d3f3e75987d974d703488af0fe3c4cb1ee89bb97789404314f5c4/manifest.json",
+  "model_label": "label",
+  "output_version": "e35752aaf4631de76015ac358c1f8c3d96d3ac2314c23c7e2935a3ce7d7137fa",
+  "outputs": {
+    "clean": "abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/silver/stock_daily/full/job-867374748807312/clean",
+    "features": "abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data/stock_daily/full/runs/job-867374748807312/features_v1",
+    "rejected": "abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data/stock_daily/full/runs/job-867374748807312/rejected"
+  },
+  "prediction_time": "On trading date t, after the opening price is available and before the market close for that ticker.",
+  "published_run": "job-867374748807312",
+  "published_utc": "2026-11-16T19:09:51.252275+00:00",
+  "quality": "abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data/stock_daily/full/runs/job-867374748807312/quality.json",
+  "row_counts": {
+    "accepted": 33451152,
+    "input": 34646258,
+    "rejected": 1195106
+  },
+  "scenario": "full",
+  "source_url": "https://www.kaggle.com/datasets/jakewright/9000-tickers-of-stock-market-data-full-history",
+  "target": "close"
+}

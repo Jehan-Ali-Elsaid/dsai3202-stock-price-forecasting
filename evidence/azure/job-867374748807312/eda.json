@@ -1,0 +1,380 @@
+{
+  "accepted_population": 33451152,
+  "coverage": {
+    "distinct_dates": 15819,
+    "dividend_action_rows": 236571,
+    "first_date": "1962-01-02",
+    "last_date": "2024-11-04",
+    "rows_by_year": [
+      {
+        "count": 2016,
+        "year": 1962
+      },
+      {
+        "count": 2015,
+        "year": 1963
+      },
+      {
+        "count": 2024,
+        "year": 1964
+      },
+      {
+        "count": 2017,
+        "year": 1965
+      },
+      {
+        "count": 2016,
+        "year": 1966
+      },
+      {
+        "count": 2009,
+        "year": 1967
+      },
+      {
+        "count": 1808,
+        "year": 1968
+      },
+      {
+        "count": 2001,
+        "year": 1969
+      },
+      {
+        "count": 6603,
+        "year": 1970
+      },
+      {
+        "count": 6578,
+        "year": 1971
+      },
+      {
+        "count": 9616,
+        "year": 1972
+      },
+      {
+        "count": 20664,
+        "year": 1973
+      },
+      {
+        "count": 22786,
+        "year": 1974
+      },
+      {
+        "count": 22506,
+        "year": 1975
+      },
+      {
+        "count": 22104,
+        "year": 1976
+      },
+      {
+        "count": 24166,
+        "year": 1977
+      },
+      {
+        "count": 24626,
+        "year": 1978
+      },
+      {
+        "count": 24704,
+        "year": 1979
+      },
+      {
+        "count": 34917,
+        "year": 1980
+      },
+      {
+        "count": 39302,
+        "year": 1981
+      },
+      {
+        "count": 47261,
+        "year": 1982
+      },
+      {
+        "count": 50726,
+        "year": 1983
+      },
+      {
+        "count": 64043,
+        "year": 1984
+      },
+      {
+        "count": 81493,
+        "year": 1985
+      },
+      {
+        "count": 90965,
+        "year": 1986
+      },
+      {
+        "count": 104653,
+        "year": 1987
+      },
+      {
+        "count": 141137,
+        "year": 1988
+      },
+      {
+        "count": 149394,
+        "year": 1989
+      },
+      {
+        "count": 191200,
+        "year": 1990
+      },
+      {
+        "count": 211320,
+        "year": 1991
+      },
+      {
+        "count": 257700,
+        "year": 1992
+      },
+      {
+        "count": 289539,
+        "year": 1993
+      },
+      {
+        "count": 329983,
+        "year": 1994
+      },
+      {
+        "count": 363502,
+        "year": 1995
+      },
+      {
+        "count": 397560,
+        "year": 1996
+      },
+      {
+        "count": 428723,
+        "year": 1997
+      },
+      {
+        "count": 461475,
+        "year": 1998
+      },
+      {
+        "count": 504317,
+        "year": 1999
+      },
+      {
+        "count": 546237,
+        "year": 2000
+      },
+      {
+        "count": 563851,
+        "year": 2001
+      },
+      {
+        "count": 601675,
+        "year": 2002
+      },
+      {
+        "count": 631402,
+        "year": 2003
+      },
+      {
+        "count": 673379,
+        "year": 2004
+      },
+      {
+        "count": 709438,
+        "year": 2005
+      },
+      {
+        "count": 745836,
+        "year": 2006
+      },
+      {
+        "count": 799008,
+        "year": 2007
+      },
+      {
+        "count": 852793,
+        "year": 2008
+      },
+      {
+        "count": 887334,
+        "year": 2009
+      },
+      {
+        "count": 952744,
+        "year": 2010
+      },
+      {
+        "count": 1006939,
+        "year": 2011
+      },
+      {
+        "count": 1049762,
+        "year": 2012
+      },
+      {
+        "count": 1127783,
+        "year": 2013
+      },
+      {
+        "count": 1195602,
+        "year": 2014
+      },
+      {
+        "count": 1262034,
+        "year": 2015
+      },
+      {
+        "count": 1311690,
+        "year": 2016
+      },
+      {
+        "count": 1368361,
+        "year": 2017
+      },
+      {
+        "count": 1460881,
+        "year": 2018
+      },
+      {
+        "count": 1552663,
+        "year": 2019
+      },
+      {
+        "count": 1662204,
+        "year": 2020
+      },
+      {
+        "count": 1887032,
+        "year": 2021
+      },
+      {
+        "count": 2081522,
+        "year": 2022
+      },
+      {
+        "count": 2160906,
+        "year": 2023
+      },
+      {
+        "count": 1920607,
+        "year": 2024
+      }
+    ],
+    "split_action_rows": 6991,
+    "ticker_count": 9311,
+    "zero_volume_rows": 4537809
+  },
+  "feature_missing_counts": {
+    "log_previous_volume": 9311,
+    "mean_close_previous_5": 46515,
+    "open_price": 0,
+    "previous_close": 9311,
+    "previous_range_fraction": 9311
+  },
+  "notes": "Quantiles are approximate over all accepted rows. Pearson uses available pairs.",
+  "numeric": {
+    "close": {
+      "approx_quantiles": {
+        "0.0": 9.940070294645054e-11,
+        "0.25": 3.7703659534454346,
+        "0.5": 11.554060935974121,
+        "0.75": 29.23308753967285,
+        "1.0": 1.5072897744279783e+28
+      },
+      "iqr_outliers": 4055707,
+      "non_null": 33451152
+    },
+    "dividends": {
+      "approx_quantiles": {
+        "0.0": 0.0,
+        "0.25": 0.0,
+        "0.5": 0.0,
+        "0.75": 0.0,
+        "1.0": 4500.0
+      },
+      "iqr_outliers": 236571,
+      "non_null": 33451152
+    },
+    "high": {
+      "approx_quantiles": {
+        "0.0": 9.940070294645054e-11,
+        "0.25": 3.8499999046325684,
+        "0.5": 11.75008906358443,
+        "0.75": 29.677434430097048,
+        "1.0": 1.5072897744279783e+28
+      },
+      "iqr_outliers": 4058156,
+      "non_null": 33451152
+    },
+    "low": {
+      "approx_quantiles": {
+        "0.0": 9.773202039320417e-11,
+        "0.25": 3.700596912797675,
+        "0.5": 11.380000114440918,
+        "0.75": 28.765907287597656,
+        "1.0": 1.5072897744279783e+28
+      },
+      "iqr_outliers": 4053253,
+      "non_null": 33451152
+    },
+    "open": {
+      "approx_quantiles": {
+        "0.0": 9.773202039320417e-11,
+        "0.25": 3.771511047330377,
+        "0.5": 11.559580089388454,
+        "0.75": 29.209999084472656,
+        "1.0": 1.5072897744279783e+28
+      },
+      "iqr_outliers": 4059587,
+      "non_null": 33451152
+    },
+    "stock_splits": {
+      "approx_quantiles": {
+        "0.0": 0.0,
+        "0.25": 0.0,
+        "0.5": 0.0,
+        "0.75": 0.0,
+        "1.0": 1000.0
+      },
+      "iqr_outliers": 6991,
+      "non_null": 33451152
+    },
+    "volume": {
+      "approx_quantiles": {
+        "0.0": 0.0,
+        "0.25": 2600.0,
+        "0.5": 56300.0,
+        "0.75": 445500.0,
+        "1.0": 9230856000.0
+      },
+      "iqr_outliers": 5019858,
+      "non_null": 33451152
+    }
+  },
+  "other_target_rows": null,
+  "pearson": {
+    "close vs dividends": -7.876640045486163e-06,
+    "close vs stock_splits": -5.4951524593690725e-06,
+    "close vs volume": -0.0002501195958392476,
+    "dividends vs stock_splits": 7.695634941878008e-05,
+    "high vs close": 1.0,
+    "high vs dividends": -7.876640045400491e-06,
+    "high vs low": 1.0,
+    "high vs stock_splits": -5.495152459369091e-06,
+    "high vs volume": -0.00025011959583924793,
+    "low vs close": 1.0,
+    "low vs dividends": -7.87664004554155e-06,
+    "low vs stock_splits": -5.495152459369065e-06,
+    "low vs volume": -0.00025011959583924717,
+    "open vs close": 1.0,
+    "open vs dividends": -7.876640045455115e-06,
+    "open vs high": 1.0,
+    "open vs low": 1.0,
+    "open vs stock_splits": -5.495152459369077e-06,
+    "open vs volume": -0.0002501195958392475,
+    "volume vs dividends": -0.00011634428505774218,
+    "volume vs stock_splits": 0.0004089711458505689
+  },
+  "sampled": false,
+  "target": "close",
+  "top_20_target_counts": []
+}

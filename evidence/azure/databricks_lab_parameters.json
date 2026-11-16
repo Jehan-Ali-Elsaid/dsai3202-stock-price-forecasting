@@ -1,0 +1,14 @@
+{
+  "job_parameters": {
+    "config_path": "abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/handoff/f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98/project-4adabaadf90edbb7f4b3b8802ef4853de42bfebe711a07fe6dc0810a839a2575.json",
+    "handoff_path": "abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/handoff/f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98/handoff-0e8579fd1897f64192c5e0d685ea4c0642afce4b5479ab67d3db3a1d5fbd60b0.json",
+    "landing_path": "abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/bronze_csv/f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98/all_stock_data.parquet",
+    "processed_root": "abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/silver",
+    "root_path": "abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data",
+    "scenario": "full",
+    "code_version": "REPLACE_WITH_GIT_COMMIT",
+    "clean_format": "delta",
+    "adf_run_id": "2f2598ba-e1ba-11f1-9bcb-70a8a53d4b1a"
+  },
+  "quality_test_landing_path": "abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/handoff/f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98/quality_test-8527d343c5d2170f8893a6f0f31428201752224ac0ebbb9fdba32f4a9b5b43a3.parquet"
+}

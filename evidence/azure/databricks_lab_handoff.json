@@ -1,0 +1,29 @@
+{
+  "raw": {
+    "path": "abfss://raw@stockforcasting60100358.dfs.core.windows.net/stock_phase1/releases/f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98/all_stock_data.csv",
+    "source_url": "https://www.kaggle.com/datasets/jakewright/9000-tickers-of-stock-market-data-full-history",
+    "source_release": 2,
+    "sha256": "f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98",
+    "bytes": 3512208588,
+    "etag": "0x8DF43BC37FF2CBC"
+  },
+  "adf_run_id": "2f2598ba-e1ba-11f1-9bcb-70a8a53d4b1a",
+  "source_rows": 34646258,
+  "bronze": {
+    "path": "abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/bronze_csv/f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98/all_stock_data.parquet",
+    "bytes": 2182524492,
+    "sha256": "6226293660e3b96502c25ab861a9d9a735f1fa4d6abcdcd7cf76b465f5d13bd2",
+    "etag": "\"0x8DF440047D2B1A4\"",
+    "modified_epoch": 1794847210,
+    "adf_output_path": "abfss://processed@stockforcasting60100358.dfs.core.windows.net/stock_phase1/bronze_csv/f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98/all_stock_data.parquet",
+    "adf_output_etag": "\"0x8DF43DFECC5FE74\""
+  },
+  "quality_test": {
+    "path": "abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/handoff/f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98/quality_test-8527d343c5d2170f8893a6f0f31428201752224ac0ebbb9fdba32f4a9b5b43a3.parquet",
+    "bytes": 2685,
+    "sha256": "8527d343c5d2170f8893a6f0f31428201752224ac0ebbb9fdba32f4a9b5b43a3",
+    "etag": "\"0x8DF440069200740\"",
+    "modified_epoch": 1794847266
+  },
+  "verification": "Raw SHA-256 receipt and unchanged Azure metadata, plus matching Parquet SHA-256 across accounts."
+}

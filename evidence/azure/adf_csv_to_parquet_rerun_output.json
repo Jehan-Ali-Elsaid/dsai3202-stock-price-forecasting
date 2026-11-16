@@ -1,0 +1,12 @@
+[
+  {
+    "activity": "CheckBronze",
+    "exists": true,
+    "status": "Succeeded"
+  },
+  {
+    "activity": "ConvertOnlyWhenMissing",
+    "exists": null,
+    "status": "Succeeded"
+  }
+]

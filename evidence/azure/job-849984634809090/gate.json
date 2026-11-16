@@ -1,0 +1,31 @@
+{
+  "adf_run_id": null,
+  "candidate_clean_path": "abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/silver/stock_daily/quality_test/job-849984634809090/clean",
+  "candidate_output_version": "ef2a94b109e2d9c62881e95ea61836483e858b5d855b03c8120681f54d23f737",
+  "clean_format": "delta",
+  "code_version": "33458028d49b505c4108a4a4ced12790ca884695",
+  "config_sha256": "1dcef3946169c5af791a424a44b49a461e79f64c98a8e4b979579e5043f88dea",
+  "elapsed_seconds": 9.084,
+  "error": "No accepted records; Reject fraction exceeds threshold",
+  "failures": [
+    "No accepted records",
+    "Reject fraction exceeds threshold"
+  ],
+  "ingestion": "created",
+  "input_version": "e05007aa053420657afce2f68d1d2160556c25e1039918c42161d858f41f9760",
+  "manifest": "abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data/stock_daily/quality_test/raw/e05007aa053420657afce2f68d1d2160556c25e1039918c42161d858f41f9760/manifest.json",
+  "quality": "abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data/stock_daily/quality_test/runs/job-849984634809090/quality.json",
+  "row_counts": {
+    "accepted": 0,
+    "input": 4,
+    "rejected": 4
+  },
+  "run_id": "job-849984634809090",
+  "scenario": "quality_test",
+  "stage_seconds": {
+    "prepare": 8.479,
+    "validate": 0.605
+  },
+  "started_utc": "2026-11-16T19:34:22.559865+00:00",
+  "status": "quality_failed"
+}
