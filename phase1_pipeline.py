@@ -603,11 +603,11 @@ def prepare(spark, run, root, config, landing, preserved, clean_path, clean_form
         if config.get("stock_forecast"):
             rejected = rejected.withColumn("_raw_record", F.coalesce(F.col("_raw_record"), F.to_json(
                 F.struct(*[item["name"] for item in config["columns"]]), {"ignoreNullFields": "false"})))
-        rejected.select(*config["keys"], "_raw_record", "_reason").write.mode("errorifexists").parquet(
+        rejected.select(*config["keys"], "_raw_record", "_reason").write.mode("error").parquet(
             spark_path(run / "rejected"))
         if not failures:
             data.where(F.col("_reason") == "").select(*[item["name"] for item in config["columns"]]) \
-                .write.mode("errorifexists").format(clean_format).save(spark_path(clean_path))
+                .write.mode("error").format(clean_format).save(spark_path(clean_path))
         report.update(status="prepared", row_counts=row_counts, quality=str(quality_path),
                       failures=failures, candidate_clean_path=str(clean_path))
     finally:
@@ -638,7 +638,7 @@ def publish(spark, run, root, config, report):
     if config.get("stock_forecast"):
         eda["coverage"] = stock_coverage(accepted)
     features = feature_frame(accepted, config)
-    features.write.mode("errorifexists").parquet(spark_path(feature_path))
+    features.write.mode("error").parquet(spark_path(feature_path))
     saved = spark.read.parquet(spark_path(feature_path))
     counts = saved.agg(F.count("*").alias("feature_rows"), *[
         F.count(F.when(F.col(item["name"]).isNull(), 1)).alias(item["name"])
