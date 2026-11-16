@@ -1,0 +1,98 @@
+{
+  "name": "DSAI3202 Stock Close Forecast Phase 1",
+  "max_concurrent_runs": 1,
+  "parameters": [
+    {
+      "name": "config_path",
+      "default": "COPY_CONFIG_PATH_FROM_LAB_HANDOFF"
+    },
+    {
+      "name": "landing_path",
+      "default": "COPY_LANDING_PATH_FROM_LAB_HANDOFF"
+    },
+    {
+      "name": "handoff_path",
+      "default": "COPY_HANDOFF_PATH_FROM_LAB_HANDOFF"
+    },
+    {
+      "name": "processed_root",
+      "default": "abfss://processed@amazonlake60100358.dfs.core.windows.net/stock_phase1/silver"
+    },
+    {
+      "name": "root_path",
+      "default": "abfss://curated@amazonlake60100358.dfs.core.windows.net/stock_phase1/project_data"
+    },
+    {
+      "name": "scenario",
+      "default": "full"
+    },
+    {
+      "name": "code_version",
+      "default": "REPLACE_WITH_GIT_COMMIT"
+    },
+    {
+      "name": "clean_format",
+      "default": "delta"
+    },
+    {
+      "name": "adf_run_id",
+      "default": "2f2598ba-e1ba-11f1-9bcb-70a8a53d4b1a"
+    }
+  ],
+  "tasks": [
+    {
+      "task_key": "prepare",
+      "existing_cluster_id": "REPLACE_WITH_YOUR_UC_COMPUTE_ID",
+      "timeout_seconds": 7200,
+      "max_retries": 0,
+      "notebook_task": {
+        "notebook_path": "/Users/YOUR_WORKSPACE_EMAIL/DSAI3202_Phase1/phase1_pipeline",
+        "source": "WORKSPACE",
+        "base_parameters": {
+          "run_id": "job-{{job.run_id}}",
+          "stage": "prepare"
+        }
+      }
+    },
+    {
+      "task_key": "validate",
+      "existing_cluster_id": "REPLACE_WITH_YOUR_UC_COMPUTE_ID",
+      "timeout_seconds": 7200,
+      "max_retries": 0,
+      "notebook_task": {
+        "notebook_path": "/Users/YOUR_WORKSPACE_EMAIL/DSAI3202_Phase1/phase1_pipeline",
+        "source": "WORKSPACE",
+        "base_parameters": {
+          "run_id": "job-{{job.run_id}}",
+          "stage": "validate"
+        }
+      },
+      "depends_on": [
+        {
+          "task_key": "prepare"
+        }
+      ],
+      "run_if": "ALL_SUCCESS"
+    },
+    {
+      "task_key": "publish",
+      "existing_cluster_id": "REPLACE_WITH_YOUR_UC_COMPUTE_ID",
+      "timeout_seconds": 7200,
+      "max_retries": 0,
+      "notebook_task": {
+        "notebook_path": "/Users/YOUR_WORKSPACE_EMAIL/DSAI3202_Phase1/phase1_pipeline",
+        "source": "WORKSPACE",
+        "base_parameters": {
+          "run_id": "job-{{job.run_id}}",
+          "stage": "publish"
+        }
+      },
+      "depends_on": [
+        {
+          "task_key": "validate"
+        }
+      ],
+      "run_if": "ALL_SUCCESS"
+    }
+  ]
+}

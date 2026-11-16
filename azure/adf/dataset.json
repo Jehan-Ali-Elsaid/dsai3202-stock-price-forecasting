@@ -1,0 +1,66 @@
+{
+  "linkedServiceName": {
+    "referenceName": "ls_stock_lake",
+    "type": "LinkedServiceReference"
+  },
+  "parameters": {
+    "folder": {
+      "type": "String"
+    }
+  },
+  "type": "DelimitedText",
+  "typeProperties": {
+    "location": {
+      "type": "AzureBlobFSLocation",
+      "fileSystem": "raw",
+      "folderPath": {
+        "value": "@dataset().folder",
+        "type": "Expression"
+      },
+      "fileName": "all_stock_data.csv"
+    },
+    "columnDelimiter": ",",
+    "quoteChar": "\"",
+    "escapeChar": "\"",
+    "firstRowAsHeader": true,
+    "encodingName": "UTF-8"
+  },
+  "schema": [
+    {
+      "name": "Date",
+      "type": "String"
+    },
+    {
+      "name": "Ticker",
+      "type": "String"
+    },
+    {
+      "name": "Open",
+      "type": "String"
+    },
+    {
+      "name": "High",
+      "type": "String"
+    },
+    {
+      "name": "Low",
+      "type": "String"
+    },
+    {
+      "name": "Close",
+      "type": "String"
+    },
+    {
+      "name": "Volume",
+      "type": "String"
+    },
+    {
+      "name": "Dividends",
+      "type": "String"
+    },
+    {
+      "name": "Stock Splits",
+      "type": "String"
+    }
+  ]
+}

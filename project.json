@@ -2,6 +2,14 @@
   "dataset_id": "stock_daily",
   "source_url": "https://www.kaggle.com/datasets/jakewright/9000-tickers-of-stock-market-data-full-history",
   "format": "parquet",
+  "csv_release": {
+    "file_name": "all_stock_data.csv",
+    "version": 2,
+    "bytes": 3512208588,
+    "sha256": "f29b6abf161eeb97832f1d7ae918e7fe3b67c54334a342710bdb5c48ccb45f98",
+    "rows": 34646258,
+    "download_url": "https://www.kaggle.com/api/v1/datasets/download/jakewright/9000-tickers-of-stock-market-data-full-history/all_stock_data.csv"
+  },
   "task": "regression",
   "target": "close",
   "keys": ["ticker", "date"],
@@ -24,7 +32,7 @@
     {"source": "Close", "name": "close", "type": "double", "definition": "Daily closing price as provided, used as the label."},
     {"source": "Volume", "name": "volume", "type": "double", "min": 0, "definition": "Total daily trading volume as provided."},
     {"source": "Dividends", "name": "dividends", "type": "double", "min": 0, "definition": "Publisher dividend amount on that date, retained for EDA."},
-    {"source": "Stock Splits", "name": "stock_splits", "type": "double", "min": 0, "definition": "Publisher stock split ratio. Zero indicates no split in the feed."}
+    {"source": "Stock_Splits", "raw_source": "Stock Splits", "name": "stock_splits", "type": "double", "min": 0, "definition": "Publisher stock split ratio. Zero indicates no split in the feed."}
   ],
   "profile_numeric": ["open", "high", "low", "close", "volume", "dividends", "stock_splits"],
   "features": [

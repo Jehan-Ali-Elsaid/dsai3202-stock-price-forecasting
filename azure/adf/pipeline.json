@@ -1,0 +1,209 @@
+{
+  "description": "Convert the versioned source CSV to one bronze Parquet file without overwriting a previous release.",
+  "concurrency": 1,
+  "parameters": {
+    "release_sha256": {
+      "type": "String"
+    }
+  },
+  "activities": [
+    {
+      "name": "CheckBronze",
+      "type": "GetMetadata",
+      "policy": {
+        "timeout": "0.02:00:00",
+        "retry": 0
+      },
+      "typeProperties": {
+        "dataset": {
+          "referenceName": "ds_stock_phase1_parquet",
+          "type": "DatasetReference",
+          "parameters": {
+            "folder": {
+              "value": "@concat('stock_phase1/bronze_csv/', pipeline().parameters.release_sha256)",
+              "type": "Expression"
+            }
+          }
+        },
+        "fieldList": [
+          "exists"
+        ],
+        "storeSettings": {
+          "type": "AzureBlobFSReadSettings",
+          "recursive": false
+        }
+      }
+    },
+    {
+      "name": "ConvertOnlyWhenMissing",
+      "type": "IfCondition",
+      "dependsOn": [
+        {
+          "activity": "CheckBronze",
+          "dependencyConditions": [
+            "Succeeded"
+          ]
+        }
+      ],
+      "typeProperties": {
+        "expression": {
+          "value": "@not(activity('CheckBronze').output.exists)",
+          "type": "Expression"
+        },
+        "ifTrueActivities": [
+          {
+            "name": "ConvertCsvToParquet",
+            "type": "Copy",
+            "policy": {
+              "timeout": "0.02:00:00",
+              "retry": 0
+            },
+            "inputs": [
+              {
+                "referenceName": "ds_stock_phase1_csv",
+                "type": "DatasetReference",
+                "parameters": {
+                  "folder": {
+                    "value": "@concat('stock_phase1/releases/', pipeline().parameters.release_sha256)",
+                    "type": "Expression"
+                  }
+                }
+              }
+            ],
+            "outputs": [
+              {
+                "referenceName": "ds_stock_phase1_parquet",
+                "type": "DatasetReference",
+                "parameters": {
+                  "folder": {
+                    "value": "@concat('stock_phase1/bronze_csv/', pipeline().parameters.release_sha256)",
+                    "type": "Expression"
+                  }
+                }
+              }
+            ],
+            "typeProperties": {
+              "source": {
+                "type": "DelimitedTextSource",
+                "storeSettings": {
+                  "type": "AzureBlobFSReadSettings",
+                  "recursive": false
+                },
+                "formatSettings": {
+                  "type": "DelimitedTextReadSettings"
+                }
+              },
+              "sink": {
+                "type": "ParquetSink",
+                "storeSettings": {
+                  "type": "AzureBlobFSWriteSettings"
+                },
+                "formatSettings": {
+                  "type": "ParquetWriteSettings"
+                }
+              },
+              "translator": {
+                "type": "TabularTranslator",
+                "mappings": [
+                  {
+                    "source": {
+                      "name": "Date",
+                      "type": "String"
+                    },
+                    "sink": {
+                      "name": "Date",
+                      "type": "String"
+                    }
+                  },
+                  {
+                    "source": {
+                      "name": "Ticker",
+                      "type": "String"
+                    },
+                    "sink": {
+                      "name": "Ticker",
+                      "type": "String"
+                    }
+                  },
+                  {
+                    "source": {
+                      "name": "Open",
+                      "type": "String"
+                    },
+                    "sink": {
+                      "name": "Open",
+                      "type": "String"
+                    }
+                  },
+                  {
+                    "source": {
+                      "name": "High",
+                      "type": "String"
+                    },
+                    "sink": {
+                      "name": "High",
+                      "type": "String"
+                    }
+                  },
+                  {
+                    "source": {
+                      "name": "Low",
+                      "type": "String"
+                    },
+                    "sink": {
+                      "name": "Low",
+                      "type": "String"
+                    }
+                  },
+                  {
+                    "source": {
+                      "name": "Close",
+                      "type": "String"
+                    },
+                    "sink": {
+                      "name": "Close",
+                      "type": "String"
+                    }
+                  },
+                  {
+                    "source": {
+                      "name": "Volume",
+                      "type": "String"
+                    },
+                    "sink": {
+                      "name": "Volume",
+                      "type": "String"
+                    }
+                  },
+                  {
+                    "source": {
+                      "name": "Dividends",
+                      "type": "String"
+                    },
+                    "sink": {
+                      "name": "Dividends",
+                      "type": "String"
+                    }
+                  },
+                  {
+                    "source": {
+                      "name": "Stock Splits",
+                      "type": "String"
+                    },
+                    "sink": {
+                      "name": "Stock_Splits",
+                      "type": "String"
+                    }
+                  }
+                ]
+              },
+              "enableSkipIncompatibleRow": false,
+              "validateDataConsistency": true
+            }
+          }
+        ],
+        "ifFalseActivities": []
+      }
+    }
+  ]
+}
